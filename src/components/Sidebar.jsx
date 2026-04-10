@@ -8,9 +8,9 @@ const NAV_ITEMS = [
   { id: "settings",     label: "Settings",     icon: "⚙" },
 ];
 
-export default function Sidebar({ activePage, setActivePage }) {
+export default function Sidebar({ activePage, setActivePage, isOpen }) {
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${isOpen ? "" : "sidebar--hidden"}`}>
       <div className="sidebar-logo">
         <span className="logo-icon">₦</span>
         <span className="logo-text">NairaFlow</span>
