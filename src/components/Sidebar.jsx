@@ -5,15 +5,17 @@ const NAV_ITEMS = [
   { id: "transactions", label: "Transactions", icon: "⇄" },
   { id: "budget",       label: "Budget",       icon: "◎" },
   { id: "analytics",    label: "Analytics",    icon: "▦" },
+  { id: "profile",      label: "Profile",      icon: "◉" },
   { id: "settings",     label: "Settings",     icon: "⚙" },
 ];
 
-export default function Sidebar({ activePage, setActivePage, isOpen }) {
+export default function Sidebar({ activePage, setActivePage, isOpen, onClose }) {
   return (
     <aside className={`sidebar ${isOpen ? "" : "sidebar--hidden"}`}>
       <div className="sidebar-logo">
         <span className="logo-icon">₦</span>
         <span className="logo-text">NairaFlow</span>
+        <button className="sidebar-close" onClick={onClose} title="Close">✕</button>
       </div>
 
       <nav className="sidebar-nav">
