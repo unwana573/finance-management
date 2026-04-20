@@ -13,11 +13,18 @@ export default function StatCard({ label, value, change, icon, accent }) {
         <span className="stat-card__icon">{icon}</span>
       </div>
       <div className="stat-card__value">{formatNaira(value)}</div>
-      <div className={`stat-card__change ${isPositive ? "positive" : "negative"}`}>
-        <span>{isPositive ? "↗" : "↘"}</span>
-        <span>{isPositive ? "+" : ""}{change}%</span>
-        <span className="stat-card__change-label">vs last month</span>
-      </div>
+      {change !== null && (
+        <div className={`stat-card__change ${isPositive ? "positive" : "negative"}`}>
+          <span>{isPositive ? "↗" : "↘"}</span>
+          <span>{isPositive ? "+" : ""}{change}%</span>
+          <span className="stat-card__change-label">vs last month</span>
+        </div>
+      )}
+      {change === null && (
+        <div className="stat-card__change-label" style={{ marginTop: 4, fontSize: 11 }}>
+          {value === 0 ? "No data yet" : "Total to date"}
+        </div>
+      )}
     </div>
   );
 }
