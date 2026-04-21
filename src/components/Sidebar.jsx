@@ -9,7 +9,7 @@ const NAV_ITEMS = [
   { id: "settings",     label: "Settings",     icon: "⚙" },
 ];
 
-export default function Sidebar({ activePage, setActivePage, isOpen, onClose }) {
+export default function Sidebar({ activePage, setActivePage, isOpen, onClose, onLogout, user }) {
   return (
     <aside className={`sidebar ${isOpen ? "" : "sidebar--hidden"}`}>
       <div className="sidebar-logo">
@@ -32,7 +32,17 @@ export default function Sidebar({ activePage, setActivePage, isOpen, onClose }) 
       </nav>
 
       <div className="sidebar-footer">
-        <span className="sidebar-email">orokunwana@gmail.com</span>
+        <div className="sidebar-user">
+          <span className="sidebar-avatar">{(user?.name || "?")[0].toUpperCase()}</span>
+          <span className="sidebar-email">{user?.name || "Account"}</span>
+        </div>
+        <button className="sidebar-logout-btn" onClick={onLogout} title="Sign out">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </button>
       </div>
     </aside>
   );

@@ -41,8 +41,8 @@ function buildInsights(summary) {
 const ICONS    = { positive: "↗", warning: "⚠", tip: "💡" };
 const CLASSES  = { positive: "insight--positive", warning: "insight--warning", tip: "insight--tip" };
 
-export default function AnalyticsPage({ summary, transactions }) {
-  const { monthlyData, spentByCategory } = summary;
+export default function AnalyticsPage({ summary = {}, transactions = [] }) {
+  const { monthlyData = [], spentByCategory = {} } = summary;
   const isEmpty = transactions.length === 0;
 
   const pieData = Object.entries(spentByCategory)

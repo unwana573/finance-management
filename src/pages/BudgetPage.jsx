@@ -30,11 +30,11 @@ function BudgetBar({ name, spent, budget, onEdit }) {
   );
 }
 
-export default function BudgetPage({ summary, budgets, onUpdateBudget }) {
-  const [editing,    setEditing]    = useState(null);
-  const [editValue,  setEditValue]  = useState("");
+export default function BudgetPage({ summary = {}, budgets = {}, onUpdateBudget }) {
+  const [editing,   setEditing]  = useState(null);
+  const [editValue, setEditValue] = useState("");
 
-  const { spentByCategory } = summary;
+  const spentByCategory = summary.spentByCategory || {};
 
   const totalBudget = Object.values(budgets).reduce((s, v) => s + v, 0);
   const totalSpent  = Object.values(spentByCategory).reduce((s, v) => s + v, 0);

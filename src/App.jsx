@@ -65,6 +65,8 @@ export default function App() {
         setActivePage={handleNavClick}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        onLogout={handleLogout}
+        user={user}
       />
       <div className="content-wrapper">
         <Navbar
@@ -77,7 +79,7 @@ export default function App() {
           {activePage === "transactions" && <TransactionsPage transactions={transactions} onAdd={addTransaction} onDelete={deleteTransaction} />}
           {activePage === "budget"       && <BudgetPage       summary={summary} budgets={budgets} onUpdateBudget={updateBudget} />}
           {activePage === "analytics"    && <AnalyticsPage    summary={summary} transactions={transactions} />}
-          {activePage === "profile"      && <ProfilePage      user={user} />}
+          {activePage === "profile"      && <ProfilePage user={user} summary={summary} transactions={transactions} budgets={budgets} />}
           {activePage === "settings"     && <SettingsPage />}
         </main>
       </div>

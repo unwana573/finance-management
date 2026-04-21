@@ -8,8 +8,8 @@ import StatCard from "../components/StatCard";
 const fmt     = (v) => "₦" + (v / 1000).toFixed(0) + "k";
 const fmtFull = (v) => "₦" + Math.abs(v).toLocaleString("en-NG");
 
-export default function DashboardPage({ summary, transactions }) {
-  const { income, expenses, savings, balance, monthlyData } = summary;
+export default function DashboardPage({ summary = {}, transactions = [] }) {
+  const { income = 0, expenses = 0, savings = 0, balance = 0, monthlyData = [] } = summary;
   const recent = transactions.slice(0, 6);
   const isEmpty = transactions.length === 0;
 
