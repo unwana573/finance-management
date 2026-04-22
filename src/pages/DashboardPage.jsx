@@ -8,10 +8,11 @@ import StatCard from "../components/StatCard";
 const fmt     = (v) => "₦" + (v / 1000).toFixed(0) + "k";
 const fmtFull = (v) => "₦" + Math.abs(v).toLocaleString("en-NG");
 
-export default function DashboardPage({ summary = {}, transactions = [] }) {
+export default function DashboardPage({ summary = {}, transactions = [], user, onSignIn }) {
   const { income = 0, expenses = 0, savings = 0, balance = 0, monthlyData = [] } = summary;
   const recent = transactions.slice(0, 6);
   const isEmpty = transactions.length === 0;
+  const isGuest = !user;
 
   const CARDS = [
     { label: "TOTAL BALANCE", value: balance,   change: null, icon: "▣", accent: "#22c55e" },
@@ -26,6 +27,15 @@ export default function DashboardPage({ summary = {}, transactions = [] }) {
         <h1>Dashboard</h1>
         <p>Welcome back — here's your financial overview.</p>
       </div>
+
+      {isGuest && (
+        <div className="guest-banner">
+          <div className="guest-banner-text">
+            <strong>You're viewing a preview.</strong> Sign in to track your real finances, add transactions, and set budgets.
+          </div>
+          <button className="btn-primary" onClick={onSignIn}>Sign In</button>
+        </div>
+      )}
 
       <div className="stat-grid">
         {CARDS.map((c) => <StatCard key={c.label} {...c} />)}

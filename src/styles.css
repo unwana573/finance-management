@@ -111,6 +111,81 @@ ul { list-style: none; }
   .navbar-logout { display: flex; }
 }
 
+/* ── Auth modal ──────────────────────────────────────────────── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.modal-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+  animation: modalIn 0.2s ease;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.modal-close {
+  background: none;
+  color: var(--text-muted);
+  font-size: 16px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.15s;
+  line-height: 1;
+}
+.modal-close:hover { background: var(--bg-input); color: var(--text-primary); }
+
+/* ── Guest banner ────────────────────────────────────────────── */
+.guest-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: rgba(34,197,94,0.08);
+  border: 1px solid rgba(34,197,94,0.2);
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.guest-banner-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.guest-banner-text strong { color: var(--text-primary); }
+
+/* ── Navbar sign in btn ──────────────────────────────────────── */
+.navbar-signin {
+  padding: 7px 16px;
+  font-size: 13px;
+}
+
 /* ── Auth screen ─────────────────────────────────────────────── */
 .auth-screen {
   min-height: 100vh;
