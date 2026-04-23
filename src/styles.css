@@ -40,8 +40,10 @@ ul { list-style: none; }
   display: flex;
   flex-direction: column;
   min-width: 0;
+  width: 0;
   height: 100vh;
   overflow-y: auto;
+  transition: width 0.25s ease;
 }
 
 .main-content {
@@ -49,7 +51,7 @@ ul { list-style: none; }
   background: var(--bg-base);
 }
 
-/* ── Navbar ──────────────────────────────────────────────────── */
+
 .navbar {
   display: flex;
   align-items: center;
@@ -95,7 +97,7 @@ ul { list-style: none; }
   font-weight: 500;
 }
 
-/* Logout btn: hidden on desktop, shown on mobile only */
+
 .navbar-logout {
   display: none;
   background: none;
@@ -111,7 +113,7 @@ ul { list-style: none; }
   .navbar-logout { display: flex; }
 }
 
-/* ── Auth modal ──────────────────────────────────────────────── */
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -158,7 +160,7 @@ ul { list-style: none; }
 }
 .modal-close:hover { background: var(--bg-input); color: var(--text-primary); }
 
-/* ── Guest banner ────────────────────────────────────────────── */
+
 .guest-banner {
   display: flex;
   align-items: center;
@@ -180,13 +182,12 @@ ul { list-style: none; }
 
 .guest-banner-text strong { color: var(--text-primary); }
 
-/* ── Navbar sign in btn ──────────────────────────────────────── */
+
 .navbar-signin {
   padding: 7px 16px;
   font-size: 13px;
 }
 
-/* ── Auth screen ─────────────────────────────────────────────── */
 .auth-screen {
   min-height: 100vh;
   display: flex;
@@ -329,15 +330,16 @@ ul { list-style: none; }
   padding: 20px 0;
   flex-shrink: 0;
   overflow: hidden;
-  transition: min-width 0.25s ease, width 0.25s ease, opacity 0.25s ease, padding 0.25s ease;
+  transition: width 0.25s ease, min-width 0.25s ease, padding 0.25s ease, opacity 0.25s ease, border 0.25s ease;
 }
 
 .sidebar--hidden {
-  width: 0;
-  min-width: 0;
-  padding: 0;
+  width: 0 !important;
+  min-width: 0 !important;
+  padding: 0 !important;
   opacity: 0;
-  border-right: none;
+  border-right: none !important;
+  pointer-events: none;
 }
 
 .sidebar-logo {

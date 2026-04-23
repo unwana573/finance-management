@@ -21,7 +21,7 @@ export default function AuthModal({ onLogin, onClose }) {
   const [error,   setError]   = useState("");
   const [loading, setLoading] = useState(null);
 
-  // Close on Escape key
+  
   useEffect(() => {
     const handler = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", handler);
@@ -72,7 +72,7 @@ export default function AuthModal({ onLogin, onClose }) {
     <div className="modal-backdrop" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal-box">
 
-        {/* Header */}
+        
         <div className="modal-header">
           <div className="auth-logo">
             <span className="logo-icon">₦</span>
@@ -85,7 +85,7 @@ export default function AuthModal({ onLogin, onClose }) {
           {mode === "login" ? "Sign in to your account" : "Create a free account"}
         </p>
 
-        {/* Social buttons */}
+        
         <div className="social-btns">
           <button className="social-btn social-btn--google" onClick={() => handleSocial("google")} disabled={!!loading}>
             {loading === "google" ? <span className="spinner" /> : GOOGLE_ICON}

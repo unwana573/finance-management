@@ -10,7 +10,7 @@ import SettingsPage     from "./pages/SettingsPage";
 import ProfilePage      from "./pages/ProfilePage";
 import "./styles.css";
 
-// Pages that require login to access
+
 const PROTECTED = ["transactions", "budget", "analytics", "profile", "settings"];
 
 export default function App() {
@@ -50,7 +50,7 @@ export default function App() {
   };
 
   const handleNavClick = (page) => {
-    // If not logged in and page is protected, show sign-in modal
+    
     if (!user && PROTECTED.includes(page)) {
       setShowAuthModal(true);
       return;
@@ -70,7 +70,7 @@ export default function App() {
 
   return (
     <div className="app-layout" onClick={(e) => {
-      // Clicking anywhere on the dashboard while logged out triggers modal
+      
       if (!user && activePage === "dashboard" && e.target.closest(".dashboard-cta")) {
         setShowAuthModal(true);
       }

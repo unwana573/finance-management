@@ -18,7 +18,7 @@ export default function ProfilePage({ user = {}, summary = {}, transactions = []
   const [saved,   setSaved]   = useState(false);
   const fileRef = useRef();
 
-  // ── Compute real stats from props ──────────────────────────────
+  
   const totalTx        = transactions.length;
   const income         = summary.income    || 0;
   const expenses       = summary.expenses  || 0;
@@ -27,7 +27,7 @@ export default function ProfilePage({ user = {}, summary = {}, transactions = []
   const savingsRate    = income > 0 ? Math.round((savings / income) * 100) : 0;
   const budgetsSet     = Object.values(budgets).filter((v) => v > 0).length;
 
-  // How many distinct calendar months have transactions
+  
   const monthsTracked = transactions.length === 0 ? 0 : (() => {
     const keys = new Set(transactions.map((t) => t.date.slice(0, 7)));
     return keys.size;
@@ -52,7 +52,7 @@ export default function ProfilePage({ user = {}, summary = {}, transactions = []
     },
   ];
 
-  // ── Handlers ───────────────────────────────────────────────────
+  
   const handleEdit   = () => { setDraft(profile); setEditing(true); };
   const handleCancel = () => setEditing(false);
   const handleSave   = () => {
@@ -84,7 +84,7 @@ export default function ProfilePage({ user = {}, summary = {}, transactions = []
 
       {saved && <div className="profile-saved">✓ Profile updated successfully</div>}
 
-      {/* Avatar + name hero */}
+      
       <div className="card profile-hero">
         <div className="profile-avatar-wrap">
           <div className="profile-avatar" onClick={() => editing && fileRef.current.click()}>
@@ -116,7 +116,7 @@ export default function ProfilePage({ user = {}, summary = {}, transactions = []
         </div>
       </div>
 
-      {/* Live stats */}
+      
       <div className="profile-stats">
         {STATS.map((s) => (
           <div key={s.label} className="profile-stat-card">
@@ -126,7 +126,7 @@ export default function ProfilePage({ user = {}, summary = {}, transactions = []
         ))}
       </div>
 
-      {/* Financial snapshot */}
+      
       {income > 0 && (
         <div className="card profile-snapshot">
           <h3 className="card-title">Financial Snapshot</h3>
@@ -151,7 +151,7 @@ export default function ProfilePage({ user = {}, summary = {}, transactions = []
         </div>
       )}
 
-      {/* Editable info */}
+      
       <div className="card">
         <h3 className="card-title">Personal Information</h3>
         <div className="profile-fields">
@@ -199,7 +199,7 @@ export default function ProfilePage({ user = {}, summary = {}, transactions = []
         </div>
       </div>
 
-      {/* Danger zone */}
+      
       <div className="card profile-danger">
         <h3 className="card-title" style={{ color: "var(--red)" }}>Danger Zone</h3>
         <div className="danger-row">

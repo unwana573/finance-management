@@ -16,10 +16,10 @@ const APPLE_ICON = (
 );
 
 export default function AuthPage({ onLogin }) {
-  const [mode,     setMode]     = useState("login"); // "login" | "signup"
+  const [mode,     setMode]     = useState("login");
   const [form,     setForm]     = useState({ name: "", email: "", password: "", confirm: "" });
   const [error,    setError]    = useState("");
-  const [loading,  setLoading]  = useState(null); // "google" | "apple" | "email"
+  const [loading,  setLoading]  = useState(null); 
 
   const handleChange = (e) =>
     setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
@@ -39,7 +39,7 @@ export default function AuthPage({ onLogin }) {
     }
 
     setLoading("email");
-    // Simulate network delay — replace with real auth call
+    
     setTimeout(() => {
       setLoading(null);
       onLogin({
@@ -72,7 +72,7 @@ export default function AuthPage({ onLogin }) {
     <div className="auth-screen">
       <div className="auth-card">
 
-        {/* Logo */}
+
         <div className="auth-logo">
           <span className="logo-icon">₦</span>
           <span className="logo-text">NairaFlow</span>
@@ -81,7 +81,7 @@ export default function AuthPage({ onLogin }) {
           {mode === "login" ? "Welcome back" : "Create your account"}
         </p>
 
-        {/* Social buttons */}
+
         <div className="social-btns">
           <button
             className="social-btn social-btn--google"
@@ -102,14 +102,14 @@ export default function AuthPage({ onLogin }) {
           </button>
         </div>
 
-        {/* Divider */}
+
         <div className="auth-divider">
           <span className="auth-divider-line" />
           <span className="auth-divider-text">or</span>
           <span className="auth-divider-line" />
         </div>
 
-        {/* Email form */}
+
         {error && <div className="form-error">{error}</div>}
 
         <form onSubmit={handleEmailAuth} className="auth-form">
@@ -182,7 +182,6 @@ export default function AuthPage({ onLogin }) {
           </button>
         </form>
 
-        {/* Switch mode */}
         <p className="auth-switch">
           {mode === "login" ? "Don't have an account? " : "Already have an account? "}
           <button className="auth-link" onClick={switchMode}>
