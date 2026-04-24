@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { loginEmail, register, loginGoogle, loginApple } from "../services/auth";
+import { getMe } from "../services/user";
 
 const GOOGLE_ICON = (
   <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -21,7 +23,6 @@ export default function AuthModal({ onLogin, onClose }) {
   const [error,   setError]   = useState("");
   const [loading, setLoading] = useState(null);
 
-  
   useEffect(() => {
     const handler = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", handler);
@@ -31,35 +32,73 @@ export default function AuthModal({ onLogin, onClose }) {
   const handleChange = (e) =>
     setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
 
-  const handleEmailAuth = (e) => {
+  // Fetch user profile after token is saved, then call onLogin
+  const afterAuth = async () => {
+    const u = await getMe();
+    onLogin({ name: u.full_name, email: u.email, ...u });
+  };
+
+  const handleEmailAuth = async (e) => {
     e.preventDefault();
     setError("");
+
     if (mode === "signup") {
       if (!form.name.trim())              return setError("Please enter your name.");
       if (!form.email.trim())             return setError("Please enter your email.");
       if (form.password.length < 6)       return setError("Password must be at least 6 characters.");
       if (form.password !== form.confirm) return setError("Passwords do not match.");
     } else {
-      if (!form.email.trim())  return setError("Please enter your email.");
-      if (!form.password)      return setError("Please enter your password.");
+      if (!form.email.trim()) return setError("Please enter your email.");
+      if (!form.password)     return setError("Please enter your password.");
     }
+
     setLoading("email");
-    setTimeout(() => {
+    try {
+      if (mode === "signup") {
+        await register(form.email, form.password, form.name);
+      } else {
+        await loginEmail(form.email, form.password);
+      }
+      await afterAuth();
+    } catch (err) {
+      setError(err.message);
+    } finally {
       setLoading(null);
-      onLogin({ name: form.name || form.email.split("@")[0], email: form.email });
-    }, 800);
+    }
   };
 
-  const handleSocial = (provider) => {
-    setLoading(provider);
-    // TODO: replace with real OAuth — e.g. signInWithPopup(auth, googleProvider)
-    setTimeout(() => {
+  const handleGoogle = async () => {
+    setLoading("google");
+    try {
+      // TODO: Replace with real Google SDK id_token
+      // Example with Google One Tap:
+        google.accounts.id.initialize({ client_id: "238336908571-0a44htbhs7ph7up939ddutq6bj3vh208.apps.googleusercontent.com", callback: async ({ credential }) => {
+          await loginGoogle(credential);
+          await afterAuth();
+        }});
+        google.accounts.id.prompt();
+      throw new Error("Google SDK not configured yet. Add your Google Client ID.");
+    } catch (err) {
+      setError(err.message);
+    } finally {
       setLoading(null);
-      onLogin({
-        name:  provider === "google" ? "Google User" : "Apple User",
-        email: provider === "google" ? "user@gmail.com" : "user@icloud.com",
-      });
-    }, 1000);
+    }
+  };
+
+  const handleApple = async () => {
+    setLoading("apple");
+    try {
+      // TODO: Replace with real Apple Sign In
+      // Example with Apple JS SDK:
+      //   const { authorization, user } = await AppleID.auth.signIn();
+      //   await loginApple(authorization.id_token, user?.name?.firstName + " " + user?.name?.lastName);
+      //   await afterAuth();
+      throw new Error("Apple Sign In not configured yet. Add your Apple Service ID.");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(null);
+    }
   };
 
   const switchMode = () => {
@@ -72,7 +111,6 @@ export default function AuthModal({ onLogin, onClose }) {
     <div className="modal-backdrop" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal-box">
 
-        
         <div className="modal-header">
           <div className="auth-logo">
             <span className="logo-icon">₦</span>
@@ -85,13 +123,12 @@ export default function AuthModal({ onLogin, onClose }) {
           {mode === "login" ? "Sign in to your account" : "Create a free account"}
         </p>
 
-        
         <div className="social-btns">
-          <button className="social-btn social-btn--google" onClick={() => handleSocial("google")} disabled={!!loading}>
+          <button className="social-btn social-btn--google" onClick={handleGoogle} disabled={!!loading}>
             {loading === "google" ? <span className="spinner" /> : GOOGLE_ICON}
             <span>Continue with Google</span>
           </button>
-          <button className="social-btn social-btn--apple" onClick={() => handleSocial("apple")} disabled={!!loading}>
+          <button className="social-btn social-btn--apple" onClick={handleApple} disabled={!!loading}>
             {loading === "apple" ? <span className="spinner spinner--light" /> : APPLE_ICON}
             <span>Continue with Apple</span>
           </button>

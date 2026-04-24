@@ -1,66 +1,63 @@
 import React, { useState, useRef } from "react";
+import { updateProfile, deleteAccount } from "../services/user";
+import { getTransactions } from "../services/transactions";
+import { getSummary } from "../services/analytics";
 
-const fmtNaira = (v) => "₦" + Math.abs(v).toLocaleString("en-NG");
+const fmtNaira = (v) => "₦" + Math.abs(Number(v)).toLocaleString("en-NG");
 
-export default function ProfilePage({ user = {}, summary = {}, transactions = [], budgets = {} }) {
+export default function ProfilePage({ user = {}, onUserUpdate }) {
   const [profile, setProfile] = useState({
-    name:     user.name  || "",
+    name:     user.full_name || user.name || "",
     email:    user.email || "",
-    phone:    "",
-    location: "",
-    currency: "NGN",
-    bio:      "",
-    joined:   new Date().toLocaleString("default", { month: "long", year: "numeric" }),
+    currency: user.currency || "NGN",
   });
   const [editing, setEditing] = useState(false);
   const [draft,   setDraft]   = useState(profile);
   const [avatar,  setAvatar]  = useState(null);
   const [saved,   setSaved]   = useState(false);
+  const [error,   setError]   = useState("");
   const fileRef = useRef();
 
-  
-  const totalTx        = transactions.length;
-  const income         = summary.income    || 0;
-  const expenses       = summary.expenses  || 0;
-  const savings        = summary.savings   || 0;
-  const balance        = summary.balance   || 0;
-  const savingsRate    = income > 0 ? Math.round((savings / income) * 100) : 0;
-  const budgetsSet     = Object.values(budgets).filter((v) => v > 0).length;
+  // Stats from API
+  const [stats, setStats] = useState(null);
+  React.useEffect(() => {
+    Promise.all([getSummary(), getTransactions({ limit: 1 })])
+      .then(([s, t]) => setStats({ summary: s, totalTx: t.total }))
+      .catch(() => {});
+  }, []);
 
-  
-  const monthsTracked = transactions.length === 0 ? 0 : (() => {
-    const keys = new Set(transactions.map((t) => t.date.slice(0, 7)));
-    return keys.size;
-  })();
+  const income      = stats?.summary?.income    || 0;
+  const expenses    = stats?.summary?.expenses  || 0;
+  const savings     = stats?.summary?.savings   || 0;
+  const balance     = stats?.summary?.total_balance || 0;
+  const savingsRate = income > 0 ? Math.round((savings / income) * 100) : 0;
+  const totalTx     = stats?.totalTx ?? 0;
 
   const STATS = [
-    {
-      label: "Total Transactions",
-      value: totalTx === 0 ? "—" : totalTx,
-    },
-    {
-      label: "Months Tracked",
-      value: monthsTracked === 0 ? "—" : monthsTracked,
-    },
-    {
-      label: "Savings Rate",
-      value: income === 0 ? "—" : `${savingsRate}%`,
-    },
-    {
-      label: "Net Balance",
-      value: income === 0 ? "—" : fmtNaira(balance),
-    },
+    { label: "Total Transactions", value: stats === null ? "…" : totalTx || "—" },
+    { label: "Savings Rate",       value: stats === null ? "…" : income > 0 ? `${savingsRate}%` : "—" },
+    { label: "Net Balance",        value: stats === null ? "…" : income > 0 ? fmtNaira(balance) : "—" },
+    { label: "Total Expenses",     value: stats === null ? "…" : expenses > 0 ? fmtNaira(expenses) : "—" },
   ];
 
-  
   const handleEdit   = () => { setDraft(profile); setEditing(true); };
   const handleCancel = () => setEditing(false);
-  const handleSave   = () => {
-    setProfile(draft);
-    setEditing(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+
+  const handleSave = async () => {
+    setError("");
+    try {
+      const updated = await updateProfile({ full_name: draft.name, currency: draft.currency });
+      const next = { name: updated.full_name, email: updated.email, currency: updated.currency };
+      setProfile(next);
+      onUserUpdate?.({ ...user, ...next, full_name: updated.full_name });
+      setEditing(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (err) {
+      setError(err.message);
+    }
   };
+
   const handleChange = (e) =>
     setDraft((p) => ({ ...p, [e.target.name]: e.target.value }));
 
@@ -72,8 +69,17 @@ export default function ProfilePage({ user = {}, summary = {}, transactions = []
     reader.readAsDataURL(file);
   };
 
-  const initials = (profile.name || "?")
-    .split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+  const handleDeleteAccount = async () => {
+    if (!window.confirm("Permanently delete your account? This cannot be undone.")) return;
+    try {
+      await deleteAccount();
+      window.location.reload();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const initials = (profile.name || "?").split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 
   return (
     <div className="page">
@@ -82,41 +88,35 @@ export default function ProfilePage({ user = {}, summary = {}, transactions = []
         <p>Manage your personal information.</p>
       </div>
 
-      {saved && <div className="profile-saved">✓ Profile updated successfully</div>}
+      {saved  && <div className="profile-saved">✓ Profile updated successfully</div>}
+      {error  && <div className="form-error">{error}</div>}
 
-      
       <div className="card profile-hero">
         <div className="profile-avatar-wrap">
           <div className="profile-avatar" onClick={() => editing && fileRef.current.click()}>
-            {avatar
-              ? <img src={avatar} alt="avatar" className="avatar-img" />
-              : <span className="avatar-initials">{initials}</span>
-            }
+            {avatar ? <img src={avatar} alt="avatar" className="avatar-img" /> : <span className="avatar-initials">{initials}</span>}
             {editing && <div className="avatar-overlay"><span>Change</span></div>}
           </div>
           <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleAvatarChange} />
         </div>
-
         <div className="profile-hero-info">
           <div className="profile-name">{profile.name || "—"}</div>
-          <div className="profile-email-display">{profile.email || "—"}</div>
-          <div className="profile-joined">Member since {profile.joined}</div>
+          <div className="profile-email-display">{profile.email}</div>
+          <div className="profile-joined">
+            Member since {user.created_at ? new Date(user.created_at).toLocaleString("default", { month: "long", year: "numeric" }) : "—"}
+          </div>
         </div>
-
         <div className="profile-hero-actions">
           {!editing
             ? <button className="btn-primary" onClick={handleEdit}>Edit Profile</button>
-            : (
-              <div style={{ display: "flex", gap: 10 }}>
+            : <div style={{ display: "flex", gap: 10 }}>
                 <button className="btn-outline" onClick={handleCancel}>Cancel</button>
                 <button className="btn-primary" onClick={handleSave}>Save Changes</button>
               </div>
-            )
           }
         </div>
       </div>
 
-      
       <div className="profile-stats">
         {STATS.map((s) => (
           <div key={s.label} className="profile-stat-card">
@@ -126,99 +126,48 @@ export default function ProfilePage({ user = {}, summary = {}, transactions = []
         ))}
       </div>
 
-      
-      {income > 0 && (
-        <div className="card profile-snapshot">
-          <h3 className="card-title">Financial Snapshot</h3>
-          <div className="snapshot-grid">
-            <div className="snapshot-item">
-              <span className="snapshot-label">Total Income</span>
-              <span className="snapshot-value color-income">{fmtNaira(income)}</span>
-            </div>
-            <div className="snapshot-item">
-              <span className="snapshot-label">Total Expenses</span>
-              <span className="snapshot-value color-expense">{fmtNaira(expenses)}</span>
-            </div>
-            <div className="snapshot-item">
-              <span className="snapshot-label">Total Savings</span>
-              <span className="snapshot-value color-income">{fmtNaira(savings)}</span>
-            </div>
-            <div className="snapshot-item">
-              <span className="snapshot-label">Budgets Set</span>
-              <span className="snapshot-value">{budgetsSet} / {Object.keys(budgets).length}</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      
       <div className="card">
         <h3 className="card-title">Personal Information</h3>
         <div className="profile-fields">
-
           <div className="profile-field">
             <label className="profile-field-label">Full Name</label>
             {editing
               ? <input className="tx-input" name="name" value={draft.name} onChange={handleChange} />
-              : <div className="profile-field-value">{profile.name || <span style={{color:"var(--text-muted)"}}>Not set</span>}</div>
+              : <div className="profile-field-value">{profile.name || <span style={{ color: "var(--text-muted)" }}>Not set</span>}</div>
             }
           </div>
-
           <div className="profile-field">
             <label className="profile-field-label">Email Address</label>
-            {editing
-              ? <input className="tx-input" name="email" type="email" value={draft.email} onChange={handleChange} />
-              : <div className="profile-field-value">{profile.email || <span style={{color:"var(--text-muted)"}}>Not set</span>}</div>
-            }
+            <div className="profile-field-value">{profile.email}</div>
           </div>
-
           <div className="profile-field">
-            <label className="profile-field-label">Phone Number</label>
+            <label className="profile-field-label">Currency</label>
             {editing
-              ? <input className="tx-input" name="phone" placeholder="+234 800 000 0000" value={draft.phone} onChange={handleChange} />
-              : <div className="profile-field-value">{profile.phone || <span style={{color:"var(--text-muted)"}}>Not set</span>}</div>
+              ? (
+                <select className="tx-select" name="currency" value={draft.currency} onChange={handleChange}>
+                  <option value="NGN">Nigerian Naira (₦)</option>
+                  <option value="USD">US Dollar ($)</option>
+                  <option value="GBP">British Pound (£)</option>
+                </select>
+              )
+              : <div className="profile-field-value">{profile.currency}</div>
             }
           </div>
-
           <div className="profile-field">
-            <label className="profile-field-label">Location</label>
-            {editing
-              ? <input className="tx-input" name="location" placeholder="Lagos, Nigeria" value={draft.location} onChange={handleChange} />
-              : <div className="profile-field-value">{profile.location || <span style={{color:"var(--text-muted)"}}>Not set</span>}</div>
-            }
+            <label className="profile-field-label">Account Type</label>
+            <div className="profile-field-value">{user.two_fa_enabled ? "2FA Enabled" : "Standard"}</div>
           </div>
-
-          <div className="profile-field profile-field--full">
-            <label className="profile-field-label">Bio</label>
-            {editing
-              ? <textarea className="tx-input profile-bio-input" name="bio" placeholder="Tell us about yourself..." value={draft.bio} onChange={handleChange} rows={3} />
-              : <div className="profile-field-value">{profile.bio || <span style={{color:"var(--text-muted)"}}>Not set</span>}</div>
-            }
-          </div>
-
         </div>
       </div>
 
-      
       <div className="card profile-danger">
         <h3 className="card-title" style={{ color: "var(--red)" }}>Danger Zone</h3>
-        <div className="danger-row">
-          <div>
-            <div className="danger-title">Clear all transactions</div>
-            <div className="danger-sub">Permanently delete your transaction history</div>
-          </div>
-          <button className="btn-danger" onClick={() => window.confirm("Are you sure? This cannot be undone.") && alert("Transactions cleared (demo only)")}>
-            Clear Data
-          </button>
-        </div>
         <div className="danger-row">
           <div>
             <div className="danger-title">Delete account</div>
             <div className="danger-sub">Permanently remove your account and all data</div>
           </div>
-          <button className="btn-danger" onClick={() => window.confirm("Delete your account? This cannot be undone.") && alert("Account deleted (demo only)")}>
-            Delete Account
-          </button>
+          <button className="btn-danger" onClick={handleDeleteAccount}>Delete Account</button>
         </div>
       </div>
     </div>

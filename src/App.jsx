@@ -1,80 +1,101 @@
-import React, { useState, useMemo } from "react";
-import Sidebar from "./components/Sidebar";
-import Navbar  from "./components/Navbar";
-import AuthModal        from "./components/AuthModal";
+import React, { useState, useEffect, useCallback } from "react";
+import Sidebar    from "./components/Sidebar";
+import Navbar     from "./components/Navbar";
+import AuthModal  from "./components/AuthModal";
+
 import DashboardPage    from "./pages/DashboardPage";
 import TransactionsPage from "./pages/TransactionsPage";
 import BudgetPage       from "./pages/BudgetPage";
 import AnalyticsPage    from "./pages/AnalyticsPage";
 import SettingsPage     from "./pages/SettingsPage";
 import ProfilePage      from "./pages/ProfilePage";
-import "./styles.css";
 
+import { setLogoutHandler }   from "./services/client";
+import { logout as apiLogout } from "./services/auth";
+import { getMe }               from "./services/user";
+import { getAccessToken }      from "./services/tokens";
+import { getCategories }       from "./services/settings";
+
+import "./styles.css";
 
 const PROTECTED = ["transactions", "budget", "analytics", "profile", "settings"];
 
+const FALLBACK_CATEGORIES = [
+  { id: 1,  name: "Salary" },
+  { id: 2,  name: "Freelance" },
+  { id: 3,  name: "Investment" },
+  { id: 4,  name: "Housing" },
+  { id: 5,  name: "Food" },
+  { id: 6,  name: "Transport" },
+  { id: 7,  name: "Utilities" },
+  { id: 8,  name: "Shopping" },
+  { id: 9,  name: "Entertainment" },
+  { id: 10, name: "Savings" },
+  { id: 11, name: "Healthcare" },
+  { id: 12, name: "Education" },
+];
+
 export default function App() {
-  const [user,         setUser]         = useState(null);
-  const [activePage,   setActivePage]   = useState("dashboard");
-  const [sidebarOpen,  setSidebarOpen]  = useState(window.innerWidth >= 768);
+  const [user,          setUser]          = useState(null);
+  const [authChecked,   setAuthChecked]   = useState(false);
+  const [activePage,    setActivePage]    = useState("dashboard");
+  const [sidebarOpen,   setSidebarOpen]   = useState(window.innerWidth >= 768);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [categories,    setCategories]    = useState(FALLBACK_CATEGORIES);
 
-  const [transactions, setTransactions] = useState([]);
-  const [budgets,      setBudgets]      = useState({
-    Housing: 0, Food: 0, Transport: 0, Utilities: 0,
-    Shopping: 0, Entertainment: 0, Savings: 0,
-  });
+  // ── Restore session on load ───────────────────────────────
+  useEffect(() => {
+    const token = getAccessToken();
+    if (token) {
+      getMe()
+        .then((u) => setUser({ name: u.full_name, email: u.email, ...u }))
+        .catch(() => {})
+        .finally(() => setAuthChecked(true));
+    } else {
+      setAuthChecked(true);
+    }
+  }, []);
 
-  const summary = useMemo(() => {
-    const income   = transactions.filter(t => t.amount > 0).reduce((s, t) =>  s + t.amount, 0);
-    const expenses = transactions.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
-    const savings  = transactions.filter(t => t.category === "Savings" && t.amount > 0).reduce((s, t) => s + t.amount, 0);
-    const balance  = income - expenses;
-    const spentByCategory = {};
-    transactions.filter(t => t.amount < 0).forEach(t => {
-      spentByCategory[t.category] = (spentByCategory[t.category] || 0) + Math.abs(t.amount);
-    });
-    const monthlyData = buildMonthlyData(transactions);
-    return { income, expenses, savings, balance, spentByCategory, monthlyData };
-  }, [transactions]);
+  // ── Fetch categories once when user logs in ───────────────
+  useEffect(() => {
+    if (!user) return;
+    getCategories()
+      .then((cats) => { if (cats?.length) setCategories(cats); })
+      .catch(() => {}); // keep fallback on error
+  }, [user]);
+
+  // ── Wire logout handler for auto-logout on 401 ───────────
+  const handleLogout = useCallback(async () => {
+    await apiLogout();
+    setUser(null);
+    setActivePage("dashboard");
+  }, []);
+
+  useEffect(() => {
+    setLogoutHandler(handleLogout);
+  }, [handleLogout]);
 
   const handleLogin = (userData) => {
     setUser(userData);
     setShowAuthModal(false);
   };
 
-  const handleLogout = () => {
-    setUser(null);
-    setActivePage("dashboard");
-    setTransactions([]);
-  };
+  const [navCount, setNavCount] = useState(0);
 
   const handleNavClick = (page) => {
-    
     if (!user && PROTECTED.includes(page)) {
       setShowAuthModal(true);
       return;
     }
     setActivePage(page);
+    setNavCount((n) => n + 1); // increment so pages re-fetch on every visit
     if (window.innerWidth < 768) setSidebarOpen(false);
   };
 
-  const requireAuth = (fn) => (...args) => {
-    if (!user) { setShowAuthModal(true); return; }
-    fn(...args);
-  };
-
-  const addTransaction    = requireAuth((tx) => setTransactions(prev => [tx, ...prev]));
-  const deleteTransaction = requireAuth((id) => setTransactions(prev => prev.filter(t => t.id !== id)));
-  const updateBudget      = requireAuth((cat, val) => setBudgets(prev => ({ ...prev, [cat]: val })));
+  if (!authChecked) return null;
 
   return (
-    <div className="app-layout" onClick={(e) => {
-      
-      if (!user && activePage === "dashboard" && e.target.closest(".dashboard-cta")) {
-        setShowAuthModal(true);
-      }
-    }}>
+    <div className="app-layout">
       {sidebarOpen && window.innerWidth < 768 && (
         <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
       )}
@@ -92,48 +113,28 @@ export default function App() {
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         onLogout={handleLogout}
-        user={user}
         onSignIn={() => setShowAuthModal(true)}
+        user={user}
       />
+
       <div className="content-wrapper">
         <Navbar
-          onToggleSidebar={() => setSidebarOpen(p => !p)}
+          onToggleSidebar={() => setSidebarOpen((p) => !p)}
           user={user}
           onLogout={handleLogout}
           onSignIn={() => setShowAuthModal(true)}
         />
         <main className="main-content">
-          {activePage === "dashboard"    && <DashboardPage    summary={summary} transactions={transactions} user={user} onSignIn={() => setShowAuthModal(true)} />}
-          {activePage === "transactions" && user && <TransactionsPage transactions={transactions} onAdd={addTransaction} onDelete={deleteTransaction} />}
-          {activePage === "budget"       && user && <BudgetPage       summary={summary} budgets={budgets} onUpdateBudget={updateBudget} />}
-          {activePage === "analytics"    && user && <AnalyticsPage    summary={summary} transactions={transactions} />}
-          {activePage === "profile"      && user && <ProfilePage      user={user} summary={summary} transactions={transactions} budgets={budgets} />}
-          {activePage === "settings"     && user && <SettingsPage />}
+          {activePage === "dashboard"    && (
+            <DashboardPage user={user} onSignIn={() => setShowAuthModal(true)} isActive={navCount} />
+          )}
+          {activePage === "transactions" && user && <TransactionsPage categories={categories} />}
+          {activePage === "budget"       && user && <BudgetPage categories={categories} isActive={navCount} />}
+          {activePage === "analytics"    && user && <AnalyticsPage isActive={navCount} />}
+          {activePage === "profile"      && user && <ProfilePage user={user} onUserUpdate={setUser} />}
+          {activePage === "settings"     && user && <SettingsPage user={user} />}
         </main>
       </div>
     </div>
   );
-}
-
-function buildMonthlyData(transactions) {
-  const months = [];
-  const now = new Date();
-  for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    months.push({
-      month: d.toLocaleString("default", { month: "short" }),
-      year: d.getFullYear(),
-      monthNum: d.getMonth(),
-      income: 0,
-      expenses: 0,
-    });
-  }
-  transactions.forEach(tx => {
-    const d = new Date(tx.date);
-    const entry = months.find(m => m.monthNum === d.getMonth() && m.year === d.getFullYear());
-    if (!entry) return;
-    if (tx.amount > 0) entry.income   += tx.amount;
-    else               entry.expenses += Math.abs(tx.amount);
-  });
-  return months;
 }
