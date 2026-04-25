@@ -68,16 +68,16 @@ export default function AuthModal({ onLogin, onClose }) {
       });
     };
 
-    // If Google script already loaded
-    if (window.google) { initGoogle(); return; }
-
-    // Otherwise inject the script
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    script.onload = initGoogle;
-    document.head.appendChild(script);
+    // Script is preloaded in index.html — just wait for it if not ready yet
+    if (window.google) {
+      initGoogle();
+    } else {
+      // Fallback: poll briefly in case script hasn't executed yet
+      const poll = setInterval(() => {
+        if (window.google) { clearInterval(poll); initGoogle(); }
+      }, 100);
+      return () => clearInterval(poll);
+    }
   }, [GOOGLE_CLIENT_ID, onLogin]);
 
   const handleChange = (e) =>
@@ -150,7 +150,7 @@ export default function AuthModal({ onLogin, onClose }) {
           ) : (
             <div className="social-btn-disabled">
               {GOOGLE_ICON}
-              <span>Google Sign In (add VITE_GOOGLE_CLIENT_ID)</span>
+              <span>Google Sign In (238336908571-0a44htbhs7ph7up939ddutq6bj3vh208.apps.googleusercontent.com)</span>
             </div>
           )}
           <button className="social-btn social-btn--apple" onClick={handleApple} disabled={!!loading}>
