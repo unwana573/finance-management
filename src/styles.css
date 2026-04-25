@@ -64,7 +64,7 @@ ul { list-style: none; }
 }
 
 .navbar-toggle {
-  display: flex;
+  display: none;
   flex-direction: column;
   justify-content: center;
   gap: 5px;
@@ -76,6 +76,10 @@ ul { list-style: none; }
   transition: background 0.15s;
 }
 .navbar-toggle:hover { background: var(--bg-card); }
+
+@media (max-width: 768px) {
+  .navbar-toggle { display: flex; }
+}
 
 .toggle-bar {
   display: block;
@@ -89,6 +93,7 @@ ul { list-style: none; }
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-left: auto;
 }
 
 .navbar-avatar {
@@ -142,10 +147,11 @@ ul { list-style: none; }
   background: rgba(0, 0, 0, 0.7);
   z-index: 1000;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   padding: 20px;
   backdrop-filter: blur(4px);
+  overflow-y: auto;
 }
 
 .modal-box {
@@ -157,6 +163,7 @@ ul { list-style: none; }
   max-width: 400px;
   position: relative;
   animation: modalIn 0.2s ease;
+  margin: auto;
 }
 
 @keyframes modalIn {
@@ -348,6 +355,29 @@ ul { list-style: none; }
 .auth-submit { margin-top: 4px; padding: 12px; font-size: 14px; }
 
 /* Password strength indicator */
+/* Password eye toggle */
+.pw-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pw-input-wrap .tx-input {
+  padding-right: 40px;
+}
+
+.pw-eye {
+  position: absolute;
+  right: 10px;
+  background: none;
+  color: var(--text-muted);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+.pw-eye:hover { color: var(--text-primary); }
+
 .pw-strength {
   margin-top: 10px;
   display: flex;
@@ -821,6 +851,15 @@ ul { list-style: none; }
 .form-error {
   background: rgba(239,68,68,0.1);
   color: var(--red);
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.form-info {
+  background: rgba(59,130,246,0.1);
+  color: #93c5fd;
   padding: 10px 14px;
   border-radius: 8px;
   margin-bottom: 12px;
