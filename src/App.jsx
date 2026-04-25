@@ -16,6 +16,7 @@ import { getMe }               from "./services/user";
 import { getAccessToken }      from "./services/tokens";
 import { getCategories }       from "./services/settings";
 
+import LoadingScreen from "./components/LoadingScreen";
 import "./styles.css";
 
 const PROTECTED = ["transactions", "budget", "analytics", "profile", "settings"];
@@ -92,7 +93,7 @@ export default function App() {
     if (window.innerWidth < 768) setSidebarOpen(false);
   };
 
-  if (!authChecked) return null;
+  if (!authChecked) return <LoadingScreen />;
 
   return (
     <div className="app-layout">
