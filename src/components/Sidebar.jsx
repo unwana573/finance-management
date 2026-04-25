@@ -10,6 +10,10 @@ const NAV_ITEMS = [
 ];
 
 export default function Sidebar({ activePage, setActivePage, isOpen, onClose, onLogout, onSignIn, user }) {
+  const initials = user?.name
+    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    : "?";
+
   return (
     <aside className={`sidebar ${isOpen ? "" : "sidebar--hidden"}`}>
       <div className="sidebar-logo">
@@ -35,7 +39,12 @@ export default function Sidebar({ activePage, setActivePage, isOpen, onClose, on
         {user ? (
           <>
             <div className="sidebar-user">
-              <span className="sidebar-avatar">{(user?.name || "?")[0].toUpperCase()}</span>
+              <div className="sidebar-avatar">
+                {user.avatar
+                  ? <img src={user.avatar} alt={user.name} className="sidebar-avatar-img" />
+                  : <span>{initials}</span>
+                }
+              </div>
               <span className="sidebar-email">{user?.name || "Account"}</span>
             </div>
             <button className="sidebar-logout-btn" onClick={onLogout} title="Sign out">

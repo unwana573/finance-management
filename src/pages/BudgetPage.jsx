@@ -13,18 +13,15 @@ const barColor = (pct) => {
   return "#22c55e";
 };
 
-function BudgetBar({ item, onEdit }) {
+function BudgetBar({ item }) {
   const pct = Math.min(item.percent_used || 0, 100);
   return (
     <div className="budget-row">
       <div className="budget-row__header">
         <span className="budget-row__name">{item.category_name}</span>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span className="budget-row__amounts">
-            {fmt(item.spent)} / {item.limit > 0 ? fmt(item.limit) : "Not set"}
-          </span>
-          <button className="budget-edit-btn" onClick={() => onEdit(item)}>Edit</button>
-        </div>
+        <span className="budget-row__amounts">
+          {fmt(item.spent)} / {item.limit > 0 ? fmt(item.limit) : "Not set"}
+        </span>
       </div>
       <div className="budget-bar-track">
         <div
@@ -123,10 +120,10 @@ export default function BudgetPage({ categories = [], isActive }) {
   const rows       = budget?.categories || [];
   const hasRows    = rows.length > 0;
 
-  // Compute totals from categories as fallback (in case backend returns 0 for totals)
-  const totalBudget = parseFloat(budget?.total_budget) || rows.reduce((s, c) => s + parseFloat(c.limit  || 0), 0);
-  const totalSpent  = parseFloat(budget?.total_spent)  || rows.reduce((s, c) => s + parseFloat(c.spent  || 0), 0);
-  const remaining   = parseFloat(budget?.remaining)    ?? (totalBudget - totalSpent);
+  // Always compute from categories — most reliable source
+  const totalBudget = rows.reduce((s, c) => s + parseFloat(c.limit || 0), 0);
+  const totalSpent  = rows.reduce((s, c) => s + parseFloat(c.spent || 0), 0);
+  const remaining   = totalBudget - totalSpent;
 
   return (
     <div className="page">
@@ -172,9 +169,6 @@ export default function BudgetPage({ categories = [], isActive }) {
           <div className="card">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <h3 className="card-title" style={{ marginBottom: 0 }}>Category Breakdown</h3>
-              <button className="btn-outline" style={{ fontSize: 12 }} onClick={() => setShowSetup(true)}>
-                Edit Limits
-              </button>
             </div>
 
             {!hasRows ? (
@@ -189,11 +183,7 @@ export default function BudgetPage({ categories = [], isActive }) {
             ) : (
               <div className="budget-list">
                 {rows.map((item) => (
-                  <BudgetBar
-                    key={item.category_id}
-                    item={item}
-                    onEdit={(i) => { setEditing(i); setEditValue(String(i.limit || "")); }}
-                  />
+                  <BudgetBar key={item.category_id} item={item} />
                 ))}
               </div>
             )}

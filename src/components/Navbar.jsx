@@ -1,6 +1,10 @@
 import React from "react";
 
 export default function Navbar({ onToggleSidebar, user, onLogout, onSignIn }) {
+  const initials = user?.name
+    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    : "?";
+
   return (
     <header className="navbar">
       <button className="navbar-toggle" onClick={onToggleSidebar} title="Toggle sidebar">
@@ -11,6 +15,12 @@ export default function Navbar({ onToggleSidebar, user, onLogout, onSignIn }) {
       <div className="navbar-right">
         {user ? (
           <>
+            <div className="navbar-avatar">
+              {user.avatar
+                ? <img src={user.avatar} alt={user.name} className="navbar-avatar-img" />
+                : <span>{initials}</span>
+              }
+            </div>
             <span className="navbar-username">{user.name}</span>
             <button className="navbar-logout" onClick={onLogout} title="Sign out">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

@@ -1,6 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { loginEmail, register, loginGoogle, loginApple } from "../services/auth";
 import { getMe } from "../services/user";
+import PasswordStrength from "./PasswordStrength";
+
+// ── Put your Google Client ID here or in .env ─────────────────
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
 const GOOGLE_ICON = (
   <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -22,6 +26,7 @@ export default function AuthModal({ onLogin, onClose }) {
   const [form,    setForm]    = useState({ name: "", email: "", password: "", confirm: "" });
   const [error,   setError]   = useState("");
   const [loading, setLoading] = useState(null);
+  const googleBtnRef = useRef(null);
 
   useEffect(() => {
     const handler = (e) => { if (e.key === "Escape") onClose(); };
@@ -29,29 +34,72 @@ export default function AuthModal({ onLogin, onClose }) {
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
 
+  // Load Google Identity Services and render button
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID) return;
+
+    const initGoogle = () => {
+      if (!window.google || !googleBtnRef.current) return;
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: async ({ credential }) => {
+          setLoading("google");
+          setError("");
+          try {
+            await loginGoogle(credential);
+            const u = await getMe();
+            onLogin({ name: u.full_name, email: u.email, avatar: u.avatar_url || null, ...u });
+          } catch (err) {
+            setError(err.message);
+          } finally {
+            setLoading(null);
+          }
+        },
+      });
+      window.google.accounts.id.renderButton(googleBtnRef.current, {
+        type: "standard",
+        theme: "outline",
+        size: "large",
+        text: "continue_with",
+        shape: "rectangular",
+        width: "100%",
+      });
+    };
+
+    // If Google script already loaded
+    if (window.google) { initGoogle(); return; }
+
+    // Otherwise inject the script
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = initGoogle;
+    document.head.appendChild(script);
+  }, [GOOGLE_CLIENT_ID, onLogin]);
+
   const handleChange = (e) =>
     setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
 
-  // Fetch user profile after token is saved, then call onLogin
   const afterAuth = async () => {
     const u = await getMe();
-    onLogin({ name: u.full_name, email: u.email, ...u });
+    onLogin({ name: u.full_name, email: u.email, avatar: u.avatar_url || null, ...u });
   };
 
   const handleEmailAuth = async (e) => {
     e.preventDefault();
     setError("");
-
     if (mode === "signup") {
       if (!form.name.trim())              return setError("Please enter your name.");
       if (!form.email.trim())             return setError("Please enter your email.");
-      if (form.password.length < 6)       return setError("Password must be at least 6 characters.");
+      if (form.password.length < 8)       return setError("Password must be at least 8 characters.");
+      const score = [/[A-Z]/, /[a-z]/, /[0-9]/, /[^A-Za-z0-9]/].filter((r) => r.test(form.password)).length;
+      if (score < 2)                      return setError("Password is too weak. Add uppercase, numbers or symbols.");
       if (form.password !== form.confirm) return setError("Passwords do not match.");
     } else {
       if (!form.email.trim()) return setError("Please enter your email.");
       if (!form.password)     return setError("Please enter your password.");
     }
-
     setLoading("email");
     try {
       if (mode === "signup") {
@@ -67,35 +115,17 @@ export default function AuthModal({ onLogin, onClose }) {
     }
   };
 
-  const handleGoogle = async () => {
-    setLoading("google");
-    try {
-      // TODO: Replace with real Google SDK id_token
-      // Example with Google One Tap:
-        google.accounts.id.initialize({ client_id: "238336908571-0a44htbhs7ph7up939ddutq6bj3vh208.apps.googleusercontent.com", callback: async ({ credential }) => {
-          await loginGoogle(credential);
-          await afterAuth();
-        }});
-        google.accounts.id.prompt();
-      throw new Error("Google SDK not configured yet. Add your Google Client ID.");
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(null);
-    }
-  };
-
   const handleApple = async () => {
     setLoading("apple");
     try {
-      // TODO: Replace with real Apple Sign In
-      // Example with Apple JS SDK:
-      //   const { authorization, user } = await AppleID.auth.signIn();
-      //   await loginApple(authorization.id_token, user?.name?.firstName + " " + user?.name?.lastName);
-      //   await afterAuth();
-      throw new Error("Apple Sign In not configured yet. Add your Apple Service ID.");
+      const { authorization, user: appleUser } = await AppleID.auth.signIn();
+      const fullName = appleUser
+        ? `${appleUser.name?.firstName || ""} ${appleUser.name?.lastName || ""}`.trim()
+        : "";
+      await loginApple(authorization.id_token, fullName);
+      await afterAuth();
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Apple Sign In failed.");
     } finally {
       setLoading(null);
     }
@@ -124,10 +154,15 @@ export default function AuthModal({ onLogin, onClose }) {
         </p>
 
         <div className="social-btns">
-          <button className="social-btn social-btn--google" onClick={handleGoogle} disabled={!!loading}>
-            {loading === "google" ? <span className="spinner" /> : GOOGLE_ICON}
-            <span>Continue with Google</span>
-          </button>
+          {/* Google button rendered by Google Identity Services SDK */}
+          {GOOGLE_CLIENT_ID ? (
+            <div ref={googleBtnRef} className="google-btn-wrapper" />
+          ) : (
+            <div className="social-btn-disabled">
+              {GOOGLE_ICON}
+              <span>Google Sign In (238336908571-0a44htbhs7ph7up939ddutq6bj3vh208.apps.googleusercontent.com)</span>
+            </div>
+          )}
           <button className="social-btn social-btn--apple" onClick={handleApple} disabled={!!loading}>
             {loading === "apple" ? <span className="spinner spinner--light" /> : APPLE_ICON}
             <span>Continue with Apple</span>
@@ -155,7 +190,8 @@ export default function AuthModal({ onLogin, onClose }) {
           </div>
           <div className="auth-field">
             <label className="form-label">Password</label>
-            <input className="tx-input full-width" name="password" type="password" placeholder={mode === "signup" ? "Min. 6 characters" : "••••••••"} value={form.password} onChange={handleChange} />
+            <input className="tx-input full-width" name="password" type="password" placeholder={mode === "signup" ? "Min. 8 characters" : "••••••••"} value={form.password} onChange={handleChange} />
+            {mode === "signup" && <PasswordStrength password={form.password} />}
           </div>
           {mode === "signup" && (
             <div className="auth-field">

@@ -13,7 +13,7 @@ export default function ProfilePage({ user = {}, onUserUpdate }) {
   });
   const [editing, setEditing] = useState(false);
   const [draft,   setDraft]   = useState(profile);
-  const [avatar,  setAvatar]  = useState(null);
+  const [avatar,  setAvatar]  = useState(user.avatar || user.avatar_url || null);
   const [saved,   setSaved]   = useState(false);
   const [error,   setError]   = useState("");
   const fileRef = useRef();
@@ -49,7 +49,8 @@ export default function ProfilePage({ user = {}, onUserUpdate }) {
       const updated = await updateProfile({ full_name: draft.name, currency: draft.currency });
       const next = { name: updated.full_name, email: updated.email, currency: updated.currency };
       setProfile(next);
-      onUserUpdate?.({ ...user, ...next, full_name: updated.full_name });
+      // Pass avatar to parent so Navbar + Sidebar update too
+      onUserUpdate?.({ ...user, ...next, full_name: updated.full_name, avatar: avatar || user.avatar });
       setEditing(false);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);

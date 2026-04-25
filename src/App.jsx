@@ -48,7 +48,7 @@ export default function App() {
     const token = getAccessToken();
     if (token) {
       getMe()
-        .then((u) => setUser({ name: u.full_name, email: u.email, ...u }))
+        .then((u) => setUser({ name: u.full_name, email: u.email, avatar: u.avatar_url || null, ...u }))
         .catch(() => {})
         .finally(() => setAuthChecked(true));
     } else {
