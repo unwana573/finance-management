@@ -43,7 +43,6 @@ export default function BudgetPage({ categories = [], isActive }) {
   const [editValue,   setEditValue]   = useState("");
   const [saving,      setSaving]      = useState(false);
   const [error,       setError]       = useState("");
-  // Setup form — limits keyed by category_id
   const [setupLimits, setSetupLimits] = useState({});
   const [showSetup,   setShowSetup]   = useState(false);
 
@@ -69,7 +68,6 @@ export default function BudgetPage({ categories = [], isActive }) {
 
   useEffect(() => { fetchBudget(); }, [isActive]);
 
-  // Pre-fill setup form with 0 for each category
   useEffect(() => {
     if (categories.length > 0) {
       const initial = {};
@@ -80,7 +78,6 @@ export default function BudgetPage({ categories = [], isActive }) {
 
   const handleCreateBudget = async () => {
     const now   = new Date();
-    // Only include categories with a limit entered (default 0 for the rest)
     const items = categories.map((c) => ({
       category_id: c.id,
       limit: parseFloat(setupLimits[c.id]) || 0,
@@ -120,7 +117,6 @@ export default function BudgetPage({ categories = [], isActive }) {
   const rows       = budget?.categories || [];
   const hasRows    = rows.length > 0;
 
-  // Always compute from categories — most reliable source
   const totalBudget = rows.reduce((s, c) => s + parseFloat(c.limit || 0), 0);
   const totalSpent  = rows.reduce((s, c) => s + parseFloat(c.spent || 0), 0);
   const remaining   = totalBudget - totalSpent;
@@ -134,7 +130,6 @@ export default function BudgetPage({ categories = [], isActive }) {
 
       {error && <div className="form-error">{error}</div>}
 
-      {/* ── No budget yet ── */}
       {!budget?.budget_exists ? (
         <div className="card" style={{ textAlign: "center", padding: 40 }}>
           <div style={{ fontSize: 36, marginBottom: 12 }}>📋</div>
@@ -147,7 +142,6 @@ export default function BudgetPage({ categories = [], isActive }) {
         </div>
       ) : (
         <>
-          {/* ── Summary cards ── */}
           <div className="stat-grid stat-grid--3">
             <div className="stat-card">
               <div className="stat-card__label">TOTAL BUDGET</div>
@@ -165,7 +159,6 @@ export default function BudgetPage({ categories = [], isActive }) {
             </div>
           </div>
 
-          {/* ── Category breakdown ── */}
           <div className="card">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <h3 className="card-title" style={{ marginBottom: 0 }}>Category Breakdown</h3>
@@ -191,7 +184,6 @@ export default function BudgetPage({ categories = [], isActive }) {
         </>
       )}
 
-      {/* ── Edit single category modal ── */}
       {editing && (
         <div className="modal-backdrop" onClick={(e) => e.target === e.currentTarget && setEditing(null)}>
           <div className="modal-box">
@@ -222,7 +214,6 @@ export default function BudgetPage({ categories = [], isActive }) {
         </div>
       )}
 
-      {/* ── Budget setup modal ── */}
       {showSetup && (
         <div className="modal-backdrop" onClick={(e) => e.target === e.currentTarget && setShowSetup(false)}>
           <div className="modal-box" style={{ maxWidth: 480, maxHeight: "85vh", overflowY: "auto" }}>

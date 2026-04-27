@@ -1,7 +1,5 @@
 import api from "./client";
 
-// ── List transactions ─────────────────────────────────────────
-// Options: { skip, limit, category_id, type, date_from, date_to }
 export function getTransactions(opts = {}) {
   const params = new URLSearchParams();
   if (opts.skip        != null) params.set("skip",        opts.skip);
@@ -14,20 +12,14 @@ export function getTransactions(opts = {}) {
   return api.get(`/transactions${qs ? "?" + qs : ""}`);
 }
 
-// ── Recent 6 for dashboard ────────────────────────────────────
 export const getRecentTransactions = () => getTransactions({ limit: 6 });
 
-// ── Create ────────────────────────────────────────────────────
-// { description, amount, type: "income"|"expense", category_id, date? }
 export const createTransaction = (body) => api.post("/transactions", body);
 
-// ── Update ────────────────────────────────────────────────────
 export const updateTransaction = (id, body) => api.put(`/transactions/${id}`, body);
 
-// ── Delete ────────────────────────────────────────────────────
 export const deleteTransaction = (id) => api.delete(`/transactions/${id}`);
 
-// ── Export CSV ────────────────────────────────────────────────
 export async function exportTransactionsCSV() {
   const { getAccessToken } = await import("./tokens");
   const BASE_URL = import.meta.env.VITE_API_URL || "https://fina-mag.onrender.com/v1";

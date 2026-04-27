@@ -31,7 +31,7 @@ export default function AnalyticsPage({ isActive }) {
       })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [isActive]); // re-fetch every time page becomes active
+  }, [isActive]); 
 
   if (loading) return <div className="page"><p className="loading-text">Loading analytics…</p></div>;
 

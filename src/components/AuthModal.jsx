@@ -3,7 +3,6 @@ import { loginEmail, register, loginGoogle, loginApple } from "../services/auth"
 import { getMe } from "../services/user";
 import PasswordStrength from "./PasswordStrength";
 
-// ── Put your Google Client ID here or in .env ─────────────────
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
 const GOOGLE_ICON = (
@@ -36,7 +35,6 @@ export default function AuthModal({ onLogin, onClose }) {
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
 
-  // Load Google Identity Services and render button
   useEffect(() => {
     if (!GOOGLE_CLIENT_ID) return;
 
@@ -68,11 +66,9 @@ export default function AuthModal({ onLogin, onClose }) {
       });
     };
 
-    // Script is preloaded in index.html — just wait for it if not ready yet
     if (window.google) {
       initGoogle();
     } else {
-      // Fallback: poll briefly in case script hasn't executed yet
       const poll = setInterval(() => {
         if (window.google) { clearInterval(poll); initGoogle(); }
       }, 100);
@@ -144,7 +140,6 @@ export default function AuthModal({ onLogin, onClose }) {
         </p>
 
         <div className="social-btns">
-          {/* Google button rendered by Google Identity Services SDK */}
           {GOOGLE_CLIENT_ID ? (
             <div ref={googleBtnRef} className="google-btn-wrapper" />
           ) : (

@@ -51,8 +51,6 @@ export default function AuthPage({ onLogin }) {
 
   const handleSocialAuth = (provider) => {
     setLoading(provider);
-    // TODO: Replace with real OAuth flow
-    // e.g. signInWithPopup(auth, provider === "google" ? googleProvider : appleProvider)
     setTimeout(() => {
       setLoading(null);
       onLogin({

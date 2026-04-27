@@ -7,7 +7,6 @@ import { getRecentTransactions } from "../services/transactions";
 const fmt     = (v) => "₦" + (v / 1000).toFixed(0) + "k";
 const fmtFull = (v) => "₦" + Math.abs(Number(v)).toLocaleString("en-NG");
 
-// Convert { year, month } from API into a short label like "Oct"
 const monthLabel = ({ month }) =>
   new Date(2000, month - 1, 1).toLocaleString("default", { month: "short" });
 
@@ -31,7 +30,7 @@ export default function DashboardPage({ user, onSignIn, isActive }) {
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, [user, isActive]); // re-fetch every time page becomes active
+  }, [user, isActive]); 
 
   const CARDS = summary ? [
     { label: "TOTAL BALANCE", value: summary.total_balance,  change: summary.total_balance_change_pct, icon: "▣", accent: "#22c55e" },

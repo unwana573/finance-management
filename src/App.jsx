@@ -44,7 +44,6 @@ export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [categories,    setCategories]    = useState(FALLBACK_CATEGORIES);
 
-  // ── Restore session on load ───────────────────────────────
   useEffect(() => {
     const token = getAccessToken();
     if (token) {
@@ -57,7 +56,6 @@ export default function App() {
     }
   }, []);
 
-  // ── Fetch categories once when user logs in ───────────────
   useEffect(() => {
     if (!user) return;
     getCategories()
@@ -65,7 +63,6 @@ export default function App() {
       .catch(() => {}); // keep fallback on error
   }, [user]);
 
-  // ── Wire logout handler for auto-logout on 401 ───────────
   const handleLogout = useCallback(async () => {
     await apiLogout();
     setUser(null);
@@ -89,7 +86,7 @@ export default function App() {
       return;
     }
     setActivePage(page);
-    setNavCount((n) => n + 1); // increment so pages re-fetch on every visit
+    setNavCount((n) => n + 1); 
     if (window.innerWidth < 768) setSidebarOpen(false);
   };
 

@@ -27,7 +27,6 @@ export default function PasswordStrength({ password }) {
 
   return (
     <div className="pw-strength">
-      {/* Strength bar */}
       <div className="pw-bar-track">
         <div
           className="pw-bar-fill"
@@ -35,12 +34,10 @@ export default function PasswordStrength({ password }) {
         />
       </div>
 
-      {/* Label */}
       <div className="pw-label" style={{ color: level.color, background: level.bg }}>
         {level.label}
       </div>
 
-      {/* Checklist */}
       <ul className="pw-checklist">
         {results.map((r) => (
           <li key={r.id} className={`pw-check ${r.passed ? "pw-check--pass" : "pw-check--fail"}`}>

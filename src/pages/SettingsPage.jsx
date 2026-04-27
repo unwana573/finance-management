@@ -18,7 +18,6 @@ export default function SettingsPage({ user }) {
   const [loading,  setLoading]  = useState(true);
   const [error,    setError]    = useState("");
 
-  // Password change
   const [pwForm,   setPwForm]   = useState({ current: "", next: "", confirm: "" });
   const [pwSaved,  setPwSaved]  = useState(false);
   const [pwError,  setPwError]  = useState("");
@@ -100,7 +99,6 @@ export default function SettingsPage({ user }) {
         </div>
       </div>
 
-      {/* Notifications */}
       <div className="card settings-section">
         <div className="settings-section__title">🔔 Notifications</div>
         {[
@@ -120,7 +118,6 @@ export default function SettingsPage({ user }) {
         </div>
       </div>
 
-      {/* Security — 2FA */}
       <div className="card settings-section">
         <div className="settings-section__title">🛡 Security</div>
         <div className="settings-row">
@@ -149,7 +146,6 @@ export default function SettingsPage({ user }) {
         )}
       </div>
 
-      {/* Change Password */}
       <div className="card settings-section">
         <div className="settings-section__title">🔑 Change Password</div>
         {pwError && <div className="form-error">{pwError}</div>}
@@ -171,7 +167,6 @@ export default function SettingsPage({ user }) {
         </form>
       </div>
 
-      {/* Payment integrations */}
       <div className="card settings-section">
         <div className="settings-section__title">💳 Payment Integrations</div>
         <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 20 }}>

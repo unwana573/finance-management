@@ -18,7 +18,6 @@ export default function ProfilePage({ user = {}, onUserUpdate }) {
   const [error,   setError]   = useState("");
   const fileRef = useRef();
 
-  // Stats from API
   const [stats, setStats] = useState(null);
   React.useEffect(() => {
     Promise.all([getSummary(), getTransactions({ limit: 1 })])
@@ -49,7 +48,6 @@ export default function ProfilePage({ user = {}, onUserUpdate }) {
       const updated = await updateProfile({ full_name: draft.name, currency: draft.currency });
       const next = { name: updated.full_name, email: updated.email, currency: updated.currency };
       setProfile(next);
-      // Pass avatar to parent so Navbar + Sidebar update too
       onUserUpdate?.({ ...user, ...next, full_name: updated.full_name, avatar: avatar || user.avatar });
       setEditing(false);
       setSaved(true);

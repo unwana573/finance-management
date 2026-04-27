@@ -25,7 +25,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Loading screen */
 .loading-screen {
   position: fixed;
   inset: 0;
@@ -140,7 +139,7 @@ ul { list-style: none; }
   display: flex;
   flex-direction: column;
   min-width: 0;
-  width: 0; /* forces flex to recalculate */
+  width: 0;
   height: 100vh;
   overflow-y: auto;
   transition: width 0.25s ease;
@@ -151,7 +150,6 @@ ul { list-style: none; }
   background: var(--bg-base);
 }
 
-/* --- Navbar ------------------------------------------------------------------------------ */
 .navbar {
   display: flex;
   align-items: center;
@@ -224,7 +222,6 @@ ul { list-style: none; }
   font-weight: 500;
 }
 
-/* Logout btn: hidden on desktop, shown on mobile only */
 .navbar-logout {
   display: none;
   background: none;
@@ -240,7 +237,6 @@ ul { list-style: none; }
   .navbar-logout { display: flex; }
 }
 
-/* --- Auth modal ------------------------------------------------------------------------ */
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -289,7 +285,6 @@ ul { list-style: none; }
 }
 .modal-close:hover { background: var(--bg-input); color: var(--text-primary); }
 
-/* --- Guest banner --------------------------------------------------------------------- */
 .guest-banner {
   display: flex;
   align-items: center;
@@ -311,13 +306,11 @@ ul { list-style: none; }
 
 .guest-banner-text strong { color: var(--text-primary); }
 
-/* --- Navbar sign in btn ------------------------------------------------------------ */
 .navbar-signin {
   padding: 7px 16px;
   font-size: 13px;
 }
 
-/* --- Auth screen --------------------------------------------------------------------- */
 .auth-screen {
   min-height: 100vh;
   display: flex;
@@ -359,7 +352,6 @@ ul { list-style: none; }
   justify-content: center;
 }
 
-/* Google renders its own iframe - make it fill the wrapper */
 .google-btn-wrapper > div,
 .google-btn-wrapper iframe {
   width: 100% !important;
@@ -454,8 +446,6 @@ ul { list-style: none; }
 
 .auth-submit { margin-top: 4px; padding: 12px; font-size: 14px; }
 
-/* Password strength indicator */
-/* Password eye toggle */
 .pw-input-wrap {
   position: relative;
   display: flex;
@@ -543,7 +533,6 @@ ul { list-style: none; }
   margin-top: 20px;
 }
 
-/* Spinner */
 .spinner {
   display: inline-block;
   width: 16px;
@@ -1011,7 +1000,6 @@ ul { list-style: none; }
   font-size: 13px;
 }
 
-/* --- Empty states --------------------------------------------------------------------- */
 .empty-chart, .empty-list {
   display: flex;
   flex-direction: column;
@@ -1032,7 +1020,6 @@ ul { list-style: none; }
   margin-top: 4px;
 }
 
-/* --- Budget edit modal ------------------------------------------------------------ */
 .budget-edit-modal {
   position: fixed;
   inset: 0;
@@ -1276,10 +1263,8 @@ ul { list-style: none; }
   .integrations-grid                { grid-template-columns: 1fr; }
 }
 
-/* --- Mobile (< 768px) --------------------------------------------------------------- */
 @media (max-width: 768px) {
 
-  /* Sidebar becomes a fixed drawer sliding in from the left */
   .sidebar {
     position: fixed !important;
     top: 0;
@@ -1295,12 +1280,10 @@ ul { list-style: none; }
     border-right: 1px solid var(--border) !important;
   }
 
-  /* When open on mobile, slide in */
   .sidebar:not(.sidebar--hidden) {
     transform: translateX(0);
   }
 
-  /* Hidden = slid out */
   .sidebar--hidden {
     transform: translateX(-100%) !important;
     width: 260px !important;
@@ -1309,7 +1292,6 @@ ul { list-style: none; }
     padding: 20px 0 !important;
   }
 
-  /* Overlay behind the open drawer */
   .sidebar-overlay {
     display: block;
     position: fixed;
@@ -1318,7 +1300,6 @@ ul { list-style: none; }
     z-index: 199;
   }
 
-  /* content-wrapper takes full width since sidebar is out of flow */
   .content-wrapper {
     width: 100%;
     margin-left: 0 !important;
@@ -1343,7 +1324,6 @@ ul { list-style: none; }
   .page-header h1 { font-size: 20px; }
 }
 
-/* Overlay hidden by default on desktop */
 .sidebar-overlay {
   display: none;
 }
