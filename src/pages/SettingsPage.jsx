@@ -174,16 +174,29 @@ export default function SettingsPage({ user }) {
       {/* Payment integrations */}
       <div className="card settings-section">
         <div className="settings-section__title">💳 Payment Integrations</div>
+        <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 20 }}>
+          Direct integrations with Nigerian payment providers are on the way. You'll be able to automatically sync transactions from your connected accounts.
+        </p>
         <div className="integrations-grid">
-          {["Paystack", "Flutterwave"].map((name) => (
-            <div key={name} className="integration-item">
-              <div>
-                <div className="integration-name">{name}</div>
-                <div className="integration-sub">Accept payments via {name}</div>
+          {[
+            { name: "Paystack",     desc: "Auto-sync Paystack transactions",     color: "#00c3f7", letter: "P" },
+            { name: "Flutterwave", desc: "Auto-sync Flutterwave transactions", color: "#f5a623", letter: "F" },
+          ].map(({ name, desc, color, letter }) => (
+            <div key={name} className="integration-card">
+              <div className="integration-card__logo" style={{ background: color + "18", border: `1px solid ${color}33` }}>
+                <span style={{ color, fontWeight: 700, fontSize: 15 }}>{letter}</span>
               </div>
-              <button className="btn-outline">Connect</button>
+              <div className="integration-card__info">
+                <div className="integration-name">{name}</div>
+                <div className="integration-sub">{desc}</div>
+              </div>
+              <span className="badge-soon">Coming soon</span>
             </div>
           ))}
+        </div>
+        <div className="integration-notice">
+          <span>🔔</span>
+          <span>We'll notify you when integrations are available.</span>
         </div>
       </div>
     </div>
