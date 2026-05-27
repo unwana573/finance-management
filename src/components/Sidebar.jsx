@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { id: "budget",       label: "Budget",       icon: "◎" },
   { id: "analytics",    label: "Analytics",    icon: "▦" },
   { id: "profile",      label: "Profile",      icon: "◉" },
+  { id: "activity",     label: "Activity Log", icon: "📋" },
   { id: "settings",     label: "Settings",     icon: "⚙" },
 ];
 

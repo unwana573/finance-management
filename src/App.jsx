@@ -9,6 +9,7 @@ import BudgetPage       from "./pages/BudgetPage";
 import AnalyticsPage    from "./pages/AnalyticsPage";
 import SettingsPage     from "./pages/SettingsPage";
 import ProfilePage      from "./pages/ProfilePage";
+import AuditLogPage     from "./pages/AuditLogPage";
 
 import { setLogoutHandler }   from "./services/client";
 import { logout as apiLogout } from "./services/auth";
@@ -19,7 +20,7 @@ import { getCategories }       from "./services/settings";
 import LoadingScreen from "./components/LoadingScreen";
 import "./styles.css";
 
-const PROTECTED = ["transactions", "budget", "analytics", "profile", "settings"];
+const PROTECTED = ["transactions", "budget", "analytics", "profile", "settings", "activity"];
 
 const FALLBACK_CATEGORIES = [
   { id: 1,  name: "Salary" },
@@ -44,6 +45,7 @@ export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [categories,    setCategories]    = useState(FALLBACK_CATEGORIES);
 
+  // ── Restore session on load ───────────────────────────────
   useEffect(() => {
     const token = getAccessToken();
     if (token) {
@@ -56,6 +58,7 @@ export default function App() {
     }
   }, []);
 
+  // ── Fetch categories once when user logs in ───────────────
   useEffect(() => {
     if (!user) return;
     getCategories()
@@ -63,6 +66,7 @@ export default function App() {
       .catch(() => {}); // keep fallback on error
   }, [user]);
 
+  // ── Wire logout handler for auto-logout on 401 ───────────
   const handleLogout = useCallback(async () => {
     await apiLogout();
     setUser(null);
@@ -86,7 +90,7 @@ export default function App() {
       return;
     }
     setActivePage(page);
-    setNavCount((n) => n + 1); 
+    setNavCount((n) => n + 1); // increment so pages re-fetch on every visit
     if (window.innerWidth < 768) setSidebarOpen(false);
   };
 
@@ -126,11 +130,12 @@ export default function App() {
           {activePage === "dashboard"    && (
             <DashboardPage user={user} onSignIn={() => setShowAuthModal(true)} isActive={navCount} />
           )}
-          {activePage === "transactions" && user && <TransactionsPage categories={categories} />}
+          {activePage === "transactions" && user && <TransactionsPage categories={categories} onCategoriesUpdate={setCategories} />}
           {activePage === "budget"       && user && <BudgetPage categories={categories} isActive={navCount} />}
           {activePage === "analytics"    && user && <AnalyticsPage isActive={navCount} />}
           {activePage === "profile"      && user && <ProfilePage user={user} onUserUpdate={setUser} />}
           {activePage === "settings"     && user && <SettingsPage user={user} />}
+          {activePage === "activity"     && user && <AuditLogPage />}
         </main>
       </div>
     </div>

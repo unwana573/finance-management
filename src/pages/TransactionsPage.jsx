@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getTransactions, createTransaction, deleteTransaction, exportTransactionsCSV } from "../services/transactions";
+import { createCategory, deleteCategory } from "../services/settings";
 
 const CATEGORY_COLORS = {
   Salary: "#22c55e", Housing: "#ef4444", Food: "#f97316",
@@ -11,12 +12,19 @@ const CATEGORY_COLORS = {
 const fmtFull = (v) => "₦" + Math.abs(Number(v)).toLocaleString("en-NG");
 const EMPTY = { description: "", amount: "", category_id: "", type: "expense" };
 
-export default function TransactionsPage({ categories = [] }) {
-  const [transactions, setTransactions] = useState([]);
-  const [form,         setForm]         = useState(EMPTY);
-  const [error,        setError]        = useState("");
-  const [saving,       setSaving]       = useState(false);
-  const [loading,      setLoading]      = useState(true);
+export default function TransactionsPage({ categories: initialCategories = [], onCategoriesUpdate }) {
+  const [transactions,  setTransactions]  = useState([]);
+  const [categories,    setCategories]    = useState(initialCategories);
+  const [form,          setForm]          = useState(EMPTY);
+  const [error,         setError]         = useState("");
+  const [saving,        setSaving]        = useState(false);
+  const [loading,       setLoading]       = useState(true);
+  const [newCatName,    setNewCatName]    = useState("");
+  const [showNewCat,    setShowNewCat]    = useState(false);
+  const [savingCat,     setSavingCat]     = useState(false);
+
+  // Sync when parent refreshes categories
+  useEffect(() => { setCategories(initialCategories); }, [initialCategories]);
 
   const fetchAll = async () => {
     setLoading(true);
@@ -70,6 +78,37 @@ export default function TransactionsPage({ categories = [] }) {
     }
   };
 
+  const handleCreateCategory = async () => {
+    if (!newCatName.trim()) return;
+    setSavingCat(true);
+    try {
+      const created = await createCategory(newCatName.trim());
+      const updated = [...categories, created];
+      setCategories(updated);
+      onCategoriesUpdate?.(updated);
+      setForm((p) => ({ ...p, category_id: String(created.id) }));
+      setNewCatName("");
+      setShowNewCat(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSavingCat(false);
+    }
+  };
+
+  const handleDeleteCategory = async (catId) => {
+    if (!window.confirm("Delete this custom category?")) return;
+    try {
+      await deleteCategory(catId);
+      const updated = categories.filter((c) => c.id !== catId);
+      setCategories(updated);
+      onCategoriesUpdate?.(updated);
+      if (form.category_id === String(catId)) setForm((p) => ({ ...p, category_id: "" }));
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   const getCategoryName = (id) =>
     categories.find((c) => c.id === id)?.name || id;
 
@@ -98,7 +137,7 @@ export default function TransactionsPage({ categories = [] }) {
           <input className="tx-input" name="amount" type="number" placeholder="Amount (₦)" value={form.amount} onChange={handleChange} />
           <select className="tx-select" name="category_id" value={form.category_id} onChange={handleChange}>
             <option value="">Category</option>
-            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}{c.is_custom ? " (custom)" : ""}</option>)}
           </select>
           <select className="tx-select" name="type" value={form.type} onChange={handleChange}>
             <option value="expense">Expense</option>
@@ -108,7 +147,49 @@ export default function TransactionsPage({ categories = [] }) {
             {saving ? "Adding…" : "+ Add"}
           </button>
         </div>
+
+        {/* Custom category quick-create */}
+        <div style={{ marginTop: 12 }}>
+          {!showNewCat ? (
+            <button className="auth-link" style={{ fontSize: 12 }} onClick={() => setShowNewCat(true)}>
+              + Create custom category
+            </button>
+          ) : (
+            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+              <input
+                className="tx-input"
+                style={{ flex: 1, minWidth: 160 }}
+                placeholder="e.g. Church Offering"
+                value={newCatName}
+                onChange={(e) => setNewCatName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleCreateCategory()}
+                autoFocus
+              />
+              <button className="btn-primary" onClick={handleCreateCategory} disabled={savingCat}>
+                {savingCat ? "Saving…" : "Create"}
+              </button>
+              <button className="btn-outline" onClick={() => { setShowNewCat(false); setNewCatName(""); }}>
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Custom categories management */}
+      {categories.some((c) => c.is_custom) && (
+        <div className="card" style={{ marginBottom: 20 }}>
+          <h3 className="card-title">Custom Categories</h3>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {categories.filter((c) => c.is_custom).map((c) => (
+              <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--bg-input)", padding: "5px 10px", borderRadius: 6, border: "1px solid var(--border)" }}>
+                <span style={{ fontSize: 13 }}>{c.name}</span>
+                <button className="delete-btn" style={{ padding: 2 }} onClick={() => handleDeleteCategory(c.id)}>✕</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="card table-card">
         {loading ? (
